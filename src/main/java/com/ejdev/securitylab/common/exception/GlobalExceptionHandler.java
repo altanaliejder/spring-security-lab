@@ -97,7 +97,7 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.toMap(
                         FieldError::getField,
                         FieldError::getDefaultMessage,
-                        (m1, m2) -> m1 // aynı field birden fazla hata verirse ilkini al
+                        (m1, m2) -> m1
                 ));
 
         var body = buildError(

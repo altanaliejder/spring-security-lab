@@ -26,7 +26,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<UserDTO> register(@Valid @RequestBody RegisterRequest request) {
         var user = authService.register(request);
-        var dto = UserDTO.from(user); // küçük bir DTO class, id/username/email dön
+        var dto = UserDTO.from(user);
         return ResponseEntity.ok(dto);
     }
 

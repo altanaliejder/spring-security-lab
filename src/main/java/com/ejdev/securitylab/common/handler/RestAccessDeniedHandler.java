@@ -31,7 +31,7 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
                 .timestamp(Instant.now())
                 .status(HttpServletResponse.SC_FORBIDDEN)
                 .error("Forbidden")
-                .code("AUTH_FORBIDDEN") // kendin isimlendirebilirsin
+                .code("AUTH_FORBIDDEN")
                 .message("Bu işlemi gerçekleştirmek için yetkiniz yok.")
                 .path(request.getRequestURI())
                 .validationErrors(null)
