@@ -1,6 +1,6 @@
 package com.ejdev.securitylab.security.apikey;
 
-import com.ejdev.securitylab.user.model.User;
+import com.ejdev.securitylab.user.entity.User;
 import com.ejdev.securitylab.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

@@ -1,8 +1,8 @@
-package com.ejdev.securitylab.auth.service.impl;
+package com.ejdev.securitylab.auth.processor.impl;
 
 import com.ejdev.securitylab.auth.dto.AuthRequest;
 import com.ejdev.securitylab.auth.dto.AuthResponse;
-import com.ejdev.securitylab.auth.service.AuthProcessor;
+import com.ejdev.securitylab.auth.processor.AuthProcessor;
 import com.ejdev.securitylab.security.apikey.ApiKeyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,5 +28,10 @@ public class ApiKeyAuthProcessor implements AuthProcessor {
         Authentication auth = authenticationManager.authenticate(authToken);
         String apiKey = apiKeyService.issueApiKeyForUser(auth.getName());
         return AuthResponse.forApiKey(apiKey);
+    }
+
+    @Override
+    public AuthResponse refresh(String refreshToken) {
+        return null;
     }
 }

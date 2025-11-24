@@ -1,4 +1,4 @@
-package com.ejdev.securitylab.user.model;
+package com.ejdev.securitylab.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -23,6 +23,11 @@ public class User {
 
     @Column(nullable = false)
     private String password;
+    @Column(unique = true)
+    private String email;
+
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified;
 
     @Column(name = "api_key", unique = true)
     private String apiKey;
@@ -35,4 +40,8 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private Set<Role> roles;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserStatus status;
 }

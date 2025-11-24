@@ -2,13 +2,14 @@ package com.ejdev.securitylab.token.service;
 
 import com.ejdev.securitylab.token.model.RefreshToken;
 import com.ejdev.securitylab.token.repository.RefreshTokenRepository;
-import com.ejdev.securitylab.user.model.User;
+import com.ejdev.securitylab.user.entity.User;
 import com.ejdev.securitylab.user.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -20,7 +21,7 @@ public class RefreshTokenService {
     private final UserRepository userRepository;
 
     @Value("${security.jwt.refresh-token-expiration-ms}")
-    private long refreshTokenExpirationMs;
+    private long REFRESH_TOKEN_TTL;
 
     @Transactional
     public RefreshToken createRefreshToken(String username) {
@@ -32,7 +33,7 @@ public class RefreshTokenService {
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(user)
                 .token(generateRandomToken())
-                .expiryDate(Instant.now().plusMillis(refreshTokenExpirationMs))
+                .expiryDate(Instant.now().plusMillis(REFRESH_TOKEN_TTL))
                 .revoked(false)
                 .used(false)
                 .build();
@@ -40,41 +41,53 @@ public class RefreshTokenService {
         return refreshTokenRepository.save(refreshToken);
     }
 
+    @Transactional(readOnly = true)
+    public RefreshToken validateAndGet(String tokenValue) {
+
+        RefreshToken token = refreshTokenRepository.findByToken(tokenValue)
+                .orElseThrow(() -> new IllegalArgumentException("Geçersiz refresh token."));
+
+        if (token.isRevoked()) {
+            throw new IllegalArgumentException("Refresh token revocation nedeniyle iptal edilmiştir.");
+        }
+
+        if (token.isUsed()) {
+            throw new IllegalArgumentException("Refresh token daha önce kullanılmıştır.");
+        }
+
+        if (token.getExpiryDate().isBefore(Instant.now())) {
+            throw new IllegalArgumentException("Refresh token süresi dolmuştur.");
+        }
+
+        return token;
+    }
+
     public String generateRandomToken() {
         // TODO: more secure token generation
         return UUID.randomUUID().toString().replace("-", "") + UUID.randomUUID();
     }
 
-    @Transactional
-    public RefreshToken verifyAndRotate(String token) {
-        RefreshToken existing = refreshTokenRepository.findByToken(token)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
+    public String rotate(RefreshToken oldToken) {
 
-        if (existing.isRevoked()) {
-            throw new IllegalStateException("Refresh token revoked");
-        }
-        if (existing.isUsed()) {
-            throw new IllegalStateException("Refresh token already used");
-        }
-        if (existing.getExpiryDate().isBefore(Instant.now())) {
-            throw new IllegalStateException("Refresh token expired");
-        }
+        oldToken.setUsed(true);
+        oldToken.setRevoked(true);
+        refreshTokenRepository.save(oldToken);
 
-        existing.setUsed(true);
-        existing.setRevoked(true);
-        refreshTokenRepository.save(existing);
+        String newTokenValue = UUID.randomUUID().toString();
 
-        User user = existing.getUser();
         RefreshToken newToken = RefreshToken.builder()
-                .user(user)
-                .token(generateRandomToken())
-                .expiryDate(Instant.now().plusMillis(refreshTokenExpirationMs))
+                .token(newTokenValue)
+                .user(oldToken.getUser())
+                .expiryDate(Instant.now().plusMillis(REFRESH_TOKEN_TTL))
                 .revoked(false)
                 .used(false)
                 .build();
 
-        return refreshTokenRepository.save(newToken);
+        refreshTokenRepository.save(newToken);
+
+        return newTokenValue;
     }
+
 
     @Transactional
     public void revoke(String token) {
@@ -83,5 +96,10 @@ public class RefreshTokenService {
             rt.setUsed(true);
             refreshTokenRepository.save(rt);
         });
+    }
+
+    @Transactional
+    public void revokeAllTokensOfUser(Long userId) {
+        refreshTokenRepository.revokeAllByUser(userId);
     }
 }

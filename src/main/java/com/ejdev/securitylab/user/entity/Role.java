@@ -1,4 +1,4 @@
-package com.ejdev.securitylab.user.model;
+package com.ejdev.securitylab.user.entity;
 
 public enum Role {
     ROLE_USER,

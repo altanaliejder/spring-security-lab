@@ -1,6 +1,6 @@
 package com.ejdev.securitylab.token.model;
 
-import com.ejdev.securitylab.user.model.User;
+import com.ejdev.securitylab.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -2,9 +2,9 @@ package com.ejdev.securitylab.auth.strategy;
 
 import com.ejdev.securitylab.auth.dto.AuthRequest;
 import com.ejdev.securitylab.auth.dto.AuthResponse;
-import com.ejdev.securitylab.auth.service.AuthProcessor;
-import com.ejdev.securitylab.auth.service.impl.ApiKeyAuthProcessor;
-import com.ejdev.securitylab.auth.service.impl.JwtAuthProcessor;
+import com.ejdev.securitylab.auth.processor.AuthProcessor;
+import com.ejdev.securitylab.auth.processor.impl.ApiKeyAuthProcessor;
+import com.ejdev.securitylab.auth.processor.impl.JwtAuthProcessor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -41,5 +41,9 @@ public class AuthStrategyDispatcher {
         }
 
         return processor.authenticate(request);
+    }
+    public AuthResponse refresh(String refreshToken) {
+        AuthProcessor processor = getProcessorMap().get(AuthStrategy.JWT);
+        return processor.refresh(refreshToken);
     }
 }
