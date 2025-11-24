@@ -1,5 +1,7 @@
 package com.ejdev.securitylab.security.config;
 
+import com.ejdev.securitylab.common.handler.RestAccessDeniedHandler;
+import com.ejdev.securitylab.common.handler.RestAuthenticationEntryPoint;
 import com.ejdev.securitylab.security.apikey.ApiKeyAuthFilter;
 import com.ejdev.securitylab.security.jwt.JwtAuthFilter;
 import com.ejdev.securitylab.user.service.UserDetailService;
@@ -27,6 +29,8 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final ApiKeyAuthFilter apiKeyAuthFilter;
     private final UserDetailService userDetailService;
+    private final RestAccessDeniedHandler accessDeniedHandler;
+    private final RestAuthenticationEntryPoint authenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -52,6 +56,10 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler)
+                )
                 .userDetailsService(userDetailService);
 
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
